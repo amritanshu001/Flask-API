@@ -21,10 +21,10 @@ class Items(MethodView):
         del items[id]
         return {"message": "Item Deleted"}
 
-    def put(self, id):
+    @blp.arguments(ItemUpdateSchema)
+    def put(self, item_data, id):
         if id not in items:
             abort(404, message="Item not found")
-        item_data = request.get_json()
         if (not item_data["price"] and not item_data["name"]):
             abort(404, message="name and price cannot be blank")
         items[id] = {**item_data, "id": id}
@@ -35,7 +35,6 @@ class Items(MethodView):
 class ItemsMassOps(MethodView):
     @blp.arguments(ItemSchema)
     def post(self, item_data):
-        # item_data = request.get_json()
         if item_data["store_id"] not in stores:
             abort(404, message="Store does not exist")
         for item in items.values():

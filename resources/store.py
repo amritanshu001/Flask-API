@@ -3,6 +3,7 @@ from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from db import stores
+from schemas import StoreSchema, StoreUpdateSchema
 
 
 blp = Blueprint("Stores", __name__, description="Operations on Store")
@@ -15,10 +16,10 @@ class Store(MethodView):
             abort(404, message="Store Not Found")
         return stores[id], 200
 
-    def put(self, id):
+    @blp.arguments(StoreUpdateSchema)
+    def put(self, store_data, id):
         if id not in stores:
             abort(404, message="Store not found")
-        store_data = request.get_json()
         stores[id] = {**store_data, "id": id}
         return {"message": "Store Changed"}
 
@@ -31,8 +32,11 @@ class Store(MethodView):
 
 @blp.route("/stores")
 class StoreMassOps(MethodView):
-    def post(self):
-        store_data = request.get_json()
+    @blp.arguments(StoreSchema)
+    def post(self, store_data):
+        for store in stores.values():
+            if store["name"] == store_data["name"]:
+                abort(400, message="Store Name Already Exists")
         store_id = uuid.uuid4().hex
         stores[store_id] = {**store_data, "id": store_id}
         return {"id": store_id}
