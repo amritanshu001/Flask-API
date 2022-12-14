@@ -10,10 +10,11 @@ blp = Blueprint("Items", __name__, description="Operations on Items")
 
 @blp.route("/items/<string:id>")
 class Items(MethodView):
+    @blp.response(200, ItemSchema)
     def get(self, id):
         if id not in items:
             abort(404, message="Item Not Found")
-        return items[id], 200
+        return items[id]
 
     def delete(self, id):
         if id not in items:
@@ -22,18 +23,20 @@ class Items(MethodView):
         return {"message": "Item Deleted"}
 
     @blp.arguments(ItemUpdateSchema)
+    @blp.response(201, ItemSchema)
     def put(self, item_data, id):
         if id not in items:
             abort(404, message="Item not found")
         if (not item_data["price"] and not item_data["name"]):
             abort(404, message="name and price cannot be blank")
         items[id] = {**item_data, "id": id}
-        return {"message": "Item Changed"}
+        return items[id]
 
 
 @blp.route("/items")
 class ItemsMassOps(MethodView):
     @blp.arguments(ItemSchema)
+    @blp.response(201, ItemSchema)
     def post(self, item_data):
         if item_data["store_id"] not in stores:
             abort(404, message="Store does not exist")
@@ -42,7 +45,8 @@ class ItemsMassOps(MethodView):
                 abort(400, message="Item Exists")
         item_id = uuid.uuid4().hex
         items[item_id] = {**item_data, "id": item_id}
-        return {"id": item_id}
+        return items[item_id]
 
+    @blp.response(200, ItemSchema(many=True))
     def get(self):
-        return {"items": list(items.values())}, 200
+        return items.values()

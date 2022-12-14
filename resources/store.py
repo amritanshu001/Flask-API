@@ -11,12 +11,14 @@ blp = Blueprint("Stores", __name__, description="Operations on Store")
 
 @blp.route("/stores/<string:id>")
 class Store(MethodView):
+    @blp.response(200, StoreSchema)
     def get(self, id):
         if id not in stores:
             abort(404, message="Store Not Found")
         return stores[id], 200
 
     @blp.arguments(StoreUpdateSchema)
+    @blp.response(201, StoreSchema)
     def put(self, store_data, id):
         if id not in stores:
             abort(404, message="Store not found")
@@ -33,13 +35,15 @@ class Store(MethodView):
 @blp.route("/stores")
 class StoreMassOps(MethodView):
     @blp.arguments(StoreSchema)
+    @blp.response(201, StoreSchema)
     def post(self, store_data):
         for store in stores.values():
             if store["name"] == store_data["name"]:
                 abort(400, message="Store Name Already Exists")
         store_id = uuid.uuid4().hex
         stores[store_id] = {**store_data, "id": store_id}
-        return {"id": store_id}
+        return stores[store_id]
 
+    @blp.response(200, StoreSchema(many=True))
     def get(self):
-        return {"stores": list(stores.values())}, 200
+        return stores.values()
