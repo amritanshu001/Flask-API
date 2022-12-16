@@ -2,8 +2,9 @@ import uuid
 from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from db import stores
 from schemas import StoreSchema, StoreUpdateSchema
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from db import db, StoresModel
 
 
 blp = Blueprint("Stores", __name__, description="Operations on Store")
@@ -13,23 +14,41 @@ blp = Blueprint("Stores", __name__, description="Operations on Store")
 class Store(MethodView):
     @blp.response(200, StoreSchema)
     def get(self, id):
-        if id not in stores:
-            abort(404, message="Store Not Found")
-        return stores[id], 200
+        store = StoresModel.query.filter_by(id=id).first()
+        if store:
+            return store
+        else:
+            abort(404, message="Store not found")
 
     @blp.arguments(StoreUpdateSchema)
     @blp.response(201, StoreSchema)
     def put(self, store_data, id):
-        if id not in stores:
+        store = StoresModel.query.filter_by(id=id).first()
+        if store:
+            store.store_name = store_data["store_name"]
+            try:
+                db.session.commit()
+            except SQLAlchemyError as err:
+                db.session.rollback()
+                abort(404, message="Error {} occured".format(err))
+            else:
+                return store
+        else:
             abort(404, message="Store not found")
-        stores[id] = {**store_data, "id": id}
-        return {"message": "Store Changed"}
 
     def delete(self, id):
-        if id not in stores:
+        store = StoresModel.query.filter_by(id=id).first()
+        if store:
+            try:
+                db.session.delete(store)
+                db.session.commit()
+            except SQLAlchemyError as err:
+                db.session.rollback()
+                abort(404, message="Erorr {} occured".format(err))
+            else:
+                return {"message": "Store Deleted"}
+        else:
             abort(404, message="Store not found")
-        del stores[id]
-        return {"message": "Store Deleted"}
 
 
 @blp.route("/stores")
@@ -37,13 +56,22 @@ class StoreMassOps(MethodView):
     @blp.arguments(StoreSchema)
     @blp.response(201, StoreSchema)
     def post(self, store_data):
-        for store in stores.values():
-            if store["name"] == store_data["name"]:
-                abort(400, message="Store Name Already Exists")
-        store_id = uuid.uuid4().hex
-        stores[store_id] = {**store_data, "id": store_id}
-        return stores[store_id]
+        store = StoresModel(**store_data)
+
+        db.session.add(store)
+
+        try:
+            db.session.commit()
+        except IntegrityError as i:
+            db.session.rollback()
+            abort(500, message="{}".format(i))
+        except SQLAlchemyError as err:
+            db.session.rollback()
+            abort(500, message="{}".format(err))
+        else:
+            return store
 
     @blp.response(200, StoreSchema(many=True))
     def get(self):
-        return stores.values()
+        stores = StoresModel.query.all()
+        return stores
