@@ -4,6 +4,7 @@ from resources.store import blp as StoreBlueprint
 from resources.items import blp as ItemsBlueprint
 from db import db, ItemsModel, StoresModel
 from dbconnection.databaseconnect import get_engine
+from flask_cors import CORS,cross_origin
 
 
 def create_app():
@@ -22,6 +23,7 @@ def create_app():
 
     db.init_app(app)
     api = Api(app)
+    cors = CORS(app)
 
     # with app.app_context():
     #     db.create_all()
