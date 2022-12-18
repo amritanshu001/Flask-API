@@ -10,6 +10,7 @@ class ItemSchemaSimple(Schema):
 class ItemUpdateSchema(Schema):
     name = fields.Str()
     price = fields.Decimal()
+    store_id = fields.Int()
 
 
 class StoreSchemaSimple(Schema):

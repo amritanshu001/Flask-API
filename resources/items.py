@@ -14,28 +14,28 @@ blp = Blueprint("Items", __name__, description="Operations on Items")
 class Items(MethodView):
     @blp.response(200, ItemSchema)
     def get(self, id):
-        pass
-        # if id not in items:
-        #     abort(404, message="Item Not Found")
-        # return items[id]
+        item = ItemsModel.query.filter_by(id=id).first()
+        if not item:
+            abort(404, message="Item not found")
+        return item
 
     def delete(self, id):
-        pass
-        # if id not in items:
-        #     abort(404, message="Item not found")
-        # del items[id]
-        # return {"message": "Item Deleted"}
+        item = ItemsModel.query.filter_by(id=id).first()
+        if not item:
+            abort(404, message="Item not found")
+        try:
+            db.session.delete(item)
+            db.session.commit()
+        except SQLAlchemyError as err:
+            abort(404, "{}".format(err))
+        return {"message": "Item Deleted"}
 
     @blp.arguments(ItemUpdateSchema)
     @blp.response(201, ItemSchema)
     def put(self, item_data, id):
-        pass
-        # if id not in items:
-        #     abort(404, message="Item not found")
-        # if (not item_data["price"] and not item_data["name"]):
-        #     abort(404, message="name and price cannot be blank")
-        # items[id] = {**item_data, "id": id}
-        # return items[id]
+        item = ItemsModel.query.filter_by(id=id).first()
+        if not item:
+            abort(404, message="Item not found")
 
 
 @blp.route("/items")
