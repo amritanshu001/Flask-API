@@ -35,3 +35,11 @@ class ItemsModel(db.Model):
 
     def __repr__(self):
         return f'<Item {self.item_name}>'
+
+
+class UserModel(db.Model):
+    __tablename__ = "users"
+    id = db.Column(db.Integer, nullable=False,
+                   primary_key=True, autoincrement=True)
+    user_name = db.Column(db.String(60), nullable=False, unique=True)
+    password = db.Column(db.String(), nullable=False)

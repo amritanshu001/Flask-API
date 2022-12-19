@@ -8,7 +8,7 @@ class ItemSchemaSimple(Schema):
 
 
 class ItemUpdateSchema(Schema):
-    name = fields.Str()
+    item_name = fields.Str()
     price = fields.Decimal()
     store_id = fields.Int()
 

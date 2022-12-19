@@ -33,9 +33,29 @@ class Items(MethodView):
     @blp.arguments(ItemUpdateSchema)
     @blp.response(201, ItemSchema)
     def put(self, item_data, id):
-        item = ItemsModel.query.filter_by(id=id).first()
-        if not item:
-            abort(404, message="Item not found")
+        item = ItemsModel.query.get_or_404(id)
+        empty = True
+        if "store_id" in item_data and item_data["store_id"]:
+            store = StoresModel.query.get_or_404(item_data["store_id"])
+            item.stores.append(store)
+            empty = False
+        if "item_name" in item_data and item_data["item_name"]:
+            item.item_name = item_data["item_name"]
+            empty = False
+        if "price" in item_data and item_data["price"]:
+            item.price = item_data["price"]
+            empty = False
+
+        if empty:
+            abort(404, message="Message is empty")
+
+        try:
+            db.session.add(item)
+            db.session.commit()
+        except SQLAlchemyError as err:
+            abort(404, "{}".format.err)
+        else:
+            return item
 
 
 @blp.route("/items")
