@@ -29,3 +29,9 @@ class ItemSchema(ItemSchemaSimple):
 
 class StoreSchema(StoreSchemaSimple):
     items = fields.List(fields.Nested(ItemSchemaSimple(), dump_only=True))
+
+
+class UserSchema(Schema):
+    id = fields.Int(dump_only=True)
+    user_name = fields.Str(required=True)
+    password = fields.Str(required=True, load_only=True)

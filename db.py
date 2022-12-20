@@ -43,3 +43,6 @@ class UserModel(db.Model):
                    primary_key=True, autoincrement=True)
     user_name = db.Column(db.String(60), nullable=False, unique=True)
     password = db.Column(db.String(), nullable=False)
+
+    def __repr__(self):
+        return f'<Item {self.user_name}>'
