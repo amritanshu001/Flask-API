@@ -38,16 +38,13 @@ def create_app():
         token_in_redis = blocklist_connection.get(jti)
         return token_in_redis is not None
 
-    # with app.app_context():
-    #     db.create_all()
-
     api.register_blueprint(StoreBlueprint)
     api.register_blueprint(ItemsBlueprint)
     api.register_blueprint(UsersBlueprint)
 
-    return [app, db]
+    return app
 
 
-if __name__ == '__main__':
-    app = create_app()[0]
-    app.run(host='0.0.0.0', port=5000)
+# if __name__ == '__main__':
+#     app = create_app()
+#     app.run(host='0.0.0.0', port=5000)
