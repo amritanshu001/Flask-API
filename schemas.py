@@ -24,11 +24,11 @@ class StoreUpdateSchema(Schema):
 
 class ItemSchema(ItemSchemaSimple):
     store_id = fields.Int(required=True, load_only=True)
-    stores = fields.List(fields.Nested(StoreSchemaSimple(), dump_only=True))
+    stores = fields.List(fields.Nested(StoreSchemaSimple()), dump_only=True)
 
 
 class StoreSchema(StoreSchemaSimple):
-    items = fields.List(fields.Nested(ItemSchemaSimple(), dump_only=True))
+    items = fields.List(fields.Nested(ItemSchemaSimple()), dump_only=True)
 
 
 class UserSchema(Schema):
